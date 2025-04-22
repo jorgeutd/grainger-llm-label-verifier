@@ -1,0 +1,21 @@
+# Core ML/Data Libraries
+pandas==2.2.3
+pyarrow==19.0.1
+numpy==1.26.4 # Usually needed with pandas
+
+# Hugging Face Ecosystem
+transformers==4.51.3
+accelerate==1.6.0
+bitsandbytes==0.45.5
+torch==2.6.0+cu124 # Pinning CUDA version is important for reproducibility
+sentencepiece==0.2.0
+huggingface_hub # For model download/login
+
+# Utilities & Notebook
+tqdm # Progress bars
+requests # For downloading data
+ipython # For notebook execution
+jupyter # For notebook execution
+matplotlib # For plots in EDA notebook
+seaborn # For plots in EDA notebook
+
