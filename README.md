@@ -14,7 +14,7 @@ This project addresses the **Grainger Applied ML LLM Exercise**, designed as a t
 
 Two primary approaches are implemented and documented in this repository:
 1.  **Multi-LLM Ensemble with Majority Voting:** Uses several open-source LLMs (Qwen-14B, Gemma-12B, Mistral-Small) and aggregates their judgments via voting for robustness. (Implemented in `src/` and demonstrated in `00_end_to_end_workflow_llm_verfication.ipynb`)
-2.  **Reflection Agent (LangGraph):** Uses a single powerful generator LLM (Claude 3.5 Sonnet) that iteratively refines its assessment based on critique from a separate, efficient critic LLM (Claude 3.7 Sonnet1). (Implemented in `notebooks/01_agentic_implementation_langgraph.ipynb`)
+2.  **Reflection Agent (LangGraph):** Uses a single powerful generator LLM (Claude 3.5 Sonnet) that iteratively refines its assessment based on critique from a separate, efficient critic LLM (Claude 3.7 Sonnet). (Implemented in `notebooks/01_agentic_implementation_langgraph.ipynb`)
 
 ## Dataset: Amazon ESCI Shopping Queries
 
