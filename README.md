@@ -1,6 +1,6 @@
 # Grainger LLM Product-Query Verification Exercise
 
-This project addresses the **Grainger Applied ML LLM Exercise**, designed as a technical component for the Senior/Staff Applied Machine Learning Scientist interview process. The core task involves verifying the accuracy of 'Exact' ('E') labels within a specific subset of the **Amazon ESCI (Experts, Substitutes, Complements, Irrelevant) Shopping Queries Dataset** using Large Language Models (LLMs). The goal is to identify query-product pairs where the 'E' label might be misapplied due to contradictions between the query specifications and the product details, and to suggest reformulated queries for these inaccurate matches based on defined rules.
+This project addresses the **Grainger Applied ML LLM Exercise**, designed as a technical component for the Staff Applied Machine Learning Scientist interview process. The core task involves verifying the accuracy of 'Exact' ('E') labels within a specific subset of the **Amazon ESCI (Experts, Substitutes, Complements, Irrelevant) Shopping Queries Dataset** using Large Language Models (LLMs). The goal is to identify query-product pairs where the 'E' label might be misapplied due to contradictions between the query specifications and the product details, and to suggest reformulated queries for these inaccurate matches based on defined rules.
 
 **Core Task:** Given a product and one of the target search queries initially labeled as an 'Exact' match ('E'), use LLMs to:
 1.  Verify if the product information strictly satisfies all specifications mentioned in the query according to predefined rules (Contradiction, Missing Information, Extra Information).
@@ -12,6 +12,10 @@ This project addresses the **Grainger Applied ML LLM Exercise**, designed as a t
 *   `kodak photo paper 8.5 x 11 glossy`
 *   `dewalt 8v max cordless screwdriver kit, gyroscopic`
 
+Two primary approaches are implemented and documented in this repository:
+1.  **Multi-LLM Ensemble with Majority Voting:** Uses several open-source LLMs (Qwen-14B, Gemma-12B, Mistral-Small) and aggregates their judgments via voting for robustness. (Implemented in `src/` and demonstrated in `00_end_to_end_workflow_llm_verfication.ipynb`)
+2.  **Reflection Agent (LangGraph):** Uses a single powerful generator LLM (Claude 3.5 Sonnet) that iteratively refines its assessment based on critique from a separate, efficient critic LLM (Claude 3.7 Sonnet1). (Implemented in `notebooks/01_agentic_implementation_langgraph.ipynb`)
+
 ## Dataset: Amazon ESCI Shopping Queries
 
 *   **Source:** [amazon-science/esci-data on GitHub](https://github.com/amazon-science/esci-data)
@@ -20,38 +24,38 @@ This project addresses the **Grainger Applied ML LLM Exercise**, designed as a t
 *   **Key Fields Used:** `query_id`, `product_id`, `query`, `esci_label`, `product_locale`, `product_title`, `product_description`, `product_bullet_point`, `product_brand`, `product_color`.
 
 ## Project Structure
-
-grainger-llm-product-query-verification/
+grainger-llm-label-verifier/
 │
-├── .gitignore # Standard Python gitignore
-├── LICENSE # e.g., MIT or Apache 2.0
-├── README.md # This file
-├── requirements.txt # Python package dependencies
+├── .gitignore
+├── README.md                                           # This file
+├── requirements.txt                                    # Dependencies
 │
 ├── notebooks/
-│ └── 01_LLM_Label_Verification.ipynb # Main analysis notebook
+│   ├── 00_end_to_end_workflow_llm_verfication.ipynb    # Ensemble Approach
+│   └── 01_agentic_implementation_langgraph.ipynb       # Reflection Agent Approach
 │
-├── src/
-│ ├── init.py
-│ ├── config.py # Configuration (file paths, model IDs, prompts)
-│ ├── data_processing.py # Data loading, merging, filtering, text prep
-│ ├── llm_interaction.py # LLM loading, inference, parsing
-│ ├── aggregation.py # Merging results, majority voting
-│ └── utils.py # Helper functions (GPU cleanup, download, sys info)
+├── results/                                            # Contains output CSVs (gitignored by default)
+│   ├── grainger_llm_reflection_results_multi_model_04_23.csv      # Reflection Agent Results
+│   ├── grainger_llm_reflection_results_multi_model_04_23_FULL.csv # Reflection Agent Full Results
+│   ├── grainger_llm_verification_results_final_vote_04_22.csv     # Ensemble Results
+│   └── grainger_llm_verification_results_final_vote_FULL.csv      # Ensemble Full Results
 │
-├── data/ # Created by script - For downloaded data
-│
-├── cache/ # Created by script - For optional filtered data cache
-│
-└── results/ # Created by script - For final output CSVs
-├── grainger_llm_verification_results_final_vote.csv
-└── grainger_llm_verification_results_final_vote_FULL.csv
+└── src/                                                # Source code modules (primarily for Ensemble approach)
+    ├── aggregation.py
+    ├── config.py
+    ├── data_processing.py
+    ├── llm_interaction.py
+    ├── utils.py
+    └── __init__.py
+
+
+
 ## Setup
 
 1.  **Clone the repository:**
     ```bash
     git clone git@github.com:jorgeutd/grainger-llm-label-verifier.git
-    cd grainger-llm-product-query-verification
+    cd grainger-llm-label-verifier
     ```
 
 2.  **Create a virtual environment (recommended):**
@@ -61,100 +65,125 @@ grainger-llm-product-query-verification/
     ```
 
 3.  **Install dependencies:**
-    Ensure you have Python 3.11+ and pip. **GPU Set up:** It's highly recommended to install PyTorch matching your specific CUDA version *before* installing other requirements. Visit [https://pytorch.org/](https://pytorch.org/) for instructions.
-
+    Ensure you have Python 3.11+.
     ```bash
     pip install -r requirements.txt
     ```
-    *   **Note:** `bitsandbytes` installation can be OS/CUDA dependent. Consult its documentation if issues arise.
+    *   **GPU Setup (for Ensemble):** If running the ensemble notebook (`notebooks/00_end_to_end_workflow_llm_verfication.ipynb`), a CUDA-enabled GPU with >= 24GB VRAM. Install PyTorch matching the CUDA version first ([https://pytorch.org/](https://pytorch.org/)). `bitsandbytes` installation might require specific steps depending on your OS/CUDA.
+    *   **Visualization ** To render the LangGraph visualization in the reflection notebook, you may need Graphviz system libraries (`apt-get install graphviz libgraphviz-dev` on Debian/Ubuntu) and the Python package (`pip install pygraphviz`).
 
-4.  **Hardware:** A **CUDA-enabled GPU with >= 24GB VRAM** is strongly recommended (tested on 40GB A100). 4-bit quantization is used, but models like Mistral-24B still require significant memory. CPU execution is possible but extremely slow.
+4.  **API Keys (for Reflection Agent):**
+    *   The reflection agent notebook (`notebooks/01_agentic_implementation_langgraph.ipynb`) uses the Anthropic API. Set your API key using **Colab Secrets** (Recommended):
+        *   Click the Key icon (🔑) in Colab sidebar.
+        *   Add a secret named `ANTHROPIC_API_KEY` with your key value (`sk-ant-...`).
+        *   Enable "Notebook access".
+    *   Alternatively, create a `.env` file in the project root with `ANTHROPIC_API_KEY='your_key'` (ensure `.env` is in `.gitignore`) or modify the notebook to load the key from the uploaded `.txt` file as demonstrated in the notebook's setup comments.
 
 ## Usage
 
-The primary way to run this analysis is via the Jupyter Notebook:
+This project provides two distinct implementations, run via their respective notebooks:
 
-1.  **Launch Jupyter:**
-    ```bash
-    jupyter lab  # or jupyter notebook
-    ```
-2.  **Open Notebook:** Navigate to `notebooks/` and open `00_end_to_end_workflow_llm_verfication.ipynb`.
-3.  **Run Cells:** Execute the notebook cells sequentially. The notebook handles:
-    *   Displaying system information.
-    *   Downloading and preparing data (using functions from `src/data_processing.py`).
-    *   Sequentially loading each LLM specified in `src/config.py` (Qwen-14B, Gemma-12B, Mistral-Small), running inference (using `src/llm_interaction.py`), and unloading the model to manage GPU memory (using `src/utils.py`).
-    *   Aggregating results from all models (using `src/aggregation.py`).
-    *   Performing final analysis and generating summary statistics.
-    *   Saving the final output CSV files to the `results/` directory.
+### 1. Ensemble Approach (Notebook 00)
 
-*(A conceptual script-based execution is possible using the `src/` modules but is not implemented as a single `main.py` in this version.)*
+*   **File:** `notebooks/00_end_to_end_workflow_llm_verfication.ipynb`
+*   **Method:** Loads multiple open-source models (Qwen, Gemma, Mistral) sequentially with 4-bit quantization, runs inference, aggregates results, performs majority voting, and saves outputs.
+*   **Requires:** GPU with sufficient VRAM (>=24GB recommended).
+*   **Output Files:** `results/grainger_llm_verification_results_final_vote_*.csv`
 
-## Approach
+### 2. Reflection Agent Approach (Notebook 01)
 
-1.  **Data Acquisition & Preparation (`src/data_processing.py`):**
-    *   Downloads ESCI examples and products parquet files.
-    *   Merges datasets on `product_id` and `product_locale`.
-    *   Filters for the 3 target queries, 'E' label, and 'us' locale.
-    *   Aggregates `product_title`, `description`, `bullet_point`, `brand`, `color` into a cleaned `llm_product_context` string, handling missing data.
+*   **File:** `notebooks/01_agentic_implementation_langgraph.ipynb`
+*   **Method:** Uses LangGraph to create an agent loop with a Generator LLM (Claude 3.5 Sonnet) and a Critic LLM (Claude 3.7 Sonnet). The agent verifies, reflects, and revises its assessment until accepted or max iterations are reached.
+*   **Requires:** Anthropic API Key (setup via Colab Secrets or other methods). 
+*   **Output Files:** `results/grainger_llm_reflection_results_multi_model_04_23.csv`
 
-2.  **LLM Selection & Setup (`src/config.py`, `src/llm_interaction.py`):**
-    *   Uses an ensemble of three models: **Qwen-14B** (`Qwen/Qwen2.5-14B-Instruct-1M`), **Gemma-12B** (`google/gemma-3-12b-it`), and **Mistral-Small-24B** (`mistralai/Mistral-Small-24B-Instruct-2501`).
-    *   Applies **4-bit quantization** (`BitsAndBytesConfig`) to all models for memory efficiency.
-    *   Loads/unloads models sequentially using Hugging Face `transformers`, `accelerate`, and `bitsandbytes`.
+**To Run:**
+1.  Complete the Setup steps.
+2.  Launch Jupyter Lab (`jupyter lab`).
+3.  Open the desired notebook (`00_...` or `01_...`).
+4.  Ensure necessary prerequisites (GPU for Notebook 00, Anthropic API Key for Notebook 01) are met.
+5.  Run the notebook cells sequentially.
 
-3.  **Prompt Engineering (`src/config.py`):**
-    *   Uses a detailed **System Prompt** defining the AI's role and rules.
-    *   Uses a **User Prompt Template** providing task details, rules (Contradiction, Missing Info, Extra Info), placeholders for query/context, and the mandatory JSON output structure (`is_exact_match`, `reasoning`, `reformulated_query`).
-    *   Formats prompts using model-specific chat templates (`tokenizer.apply_chat_template`).
+## Approach Details
 
-4.  **Inference & Parsing (`src/llm_interaction.py`):**
-    *   `run_llm_verification` orchestrates inference for one query-product pair.
-    *   `parse_llm_output_json` robustly extracts the JSON response, handling markdown code blocks and validating required keys/types.
+### 1. Ensemble (Majority Vote)
 
-5.  **Aggregation & Majority Voting (`src/aggregation.py`):**
-    *   `merge_model_results` combines results from all successful model runs into a single DataFrame.
-    *   `get_majority_vote` determines the consensus `accurate_label` (True/False based on >= 2/3 agreement). Ties are impossible with 3 voters providing valid outputs. Aggregates reasoning and identifies consensus `reformulated_query` if the final vote is False. Tracks processing errors.
-    *   `apply_majority_voting` applies the vote logic and formats the final output table.
+*   **Data Prep (`src/data_processing.py`):** Downloads, merges, filters data; aggregates product text into `llm_product_context`.
+*   **LLM Inference (`src/llm_interaction.py`):** Loads/unloads models sequentially (Qwen-14B, Gemma-12B, Mistral-Small-24B) with 4-bit quantization. Runs inference using structured prompts requiring JSON output. Parses JSON robustly.
+*   **Aggregation (`src/aggregation.py`):** Merges results, performs 2-out-of-3 majority vote for `accurate_label`, determines consensus `reformulated_query`.
+*   **Output:** Saves 4-column required CSV and a full CSV with details.
 
-6.  **Output Generation:**
-    *   Saves the required 4-column output to `results/grainger_llm_verification_results_final_vote.csv`.
-    *   Saves a full table including reasoning and errors to `results/grainger_llm_verification_results_final_vote_FULL.csv`.
+### 2. Reflection Agent (LangGraph)
 
-## Results Summary (Based on Qwen-14B, Gemma-12B, Mistral-Small-24B)
+*   **Data Prep:** Loads pre-processed data from the first notebook's output (`filtered_data_with_context_*.parquet`).
+*   **LLM Setup:** Initializes Generator (Claude 3.5 Sonnet) and Critic (Claude 3.7 Sonnet) models via Anthropic API. Binds Generator to Pydantic schema (`VerificationResult`) for structured output.
+*   **Graph Definition:**
+    *   **State (`VerificationState`):** Tracks query, context, current assessment, critique, revision count, errors.
+    *   **Nodes:** `initial_verify` (Generator), `reflect` (Critic), `revise` (Generator).
+    *   **Edges:** Defines flow: `verify` -> `reflect`. `reflect` conditionally routes to `revise` (if critique received & iterations < max) or `END` (if "ACCEPT", error, or max iterations). `revise` loops back to `reflect`.
+*   **Execution:** Iterates through data, invoking the compiled LangGraph `app` for each item. Processes the final state to determine outcome and extract results.
+*   **Output:** Saves 4-column required CSV and a full CSV with details (iterations, outcome, reasoning).
 
-*   **Models Used:** `Qwen/Qwen2.5-14B-Instruct-1M`, `google/gemma-3-12b-it`, `mistralai/Mistral-Small-24B-Instruct-2501`
-*   **Total Items Analyzed:** 24
+## Results Summary
+
+Both approaches were run on the same 24 filtered query-product pairs.
+
+### Ensemble Approach (Qwen-14B, Gemma-12B, Mistral-Small)
+
 *   **Final Label Distribution (Consensus Vote):**
-    *   ✅ **Accurate:** 16 (66.7%) - *Original 'E' label confirmed correct.*
-    *   ❌ **Inaccurate:** 8 (33.3%) - *Original 'E' label deemed incorrect due to contradictions.*
-    *   ❓ **Tied / Undecided:** 0 (0.0%) - *Consensus reached for all items.*
-*   **Items with Processing Errors during Vote:** 0
+    *   ✅ **Accurate:** 16 (66.7%)
+    *   ❌ **Inaccurate:** 8 (33.3%)
+    *   ❓ **Tied / Undecided:** 0 (0.0%)
+*   **Key Finding:** Achieved 100% consensus across the 24 items.
 
-*   **Key Findings:**
-    *   The 3-model ensemble successfully identified **8** instances where the original 'E' label was incorrect due to explicit contradictions (e.g., pack size, product attributes, technical specs, brand, product type).
-    *   A majority consensus (>= 2/3 agreement) was achieved for **all 24 items**, demonstrating the decisiveness of the odd-numbered ensemble.
-    *   The generated `reformulated_query` values in the output provide sensible corrections for the 'Inaccurate' items based on product details.
+### Reflection Agent Approach (Claude 3.5 Sonnet + Claude 3 Haiku)
 
-*(See the `notebooks/00_end_to_end_workflow_llm_verfication.ipynbb` notebook and `results/` directory for detailed analysis of consensus cases and individual model performance.)*
+*   **Final Label Distribution (After Reflection):**
+    *   ✅ **Accurate:** 16 (66.7%)
+    *   ❌ **Inaccurate:** 8 (33.3%)
+    *   ❓ **Undetermined:** 0 (0.0%) *(The 1 item hitting Max Iterations still yielded a final label)*
+*   **Workflow Outcomes:**
+    *   **Accepted:** 23 items reached "ACCEPT".
+    *   **Max Iterations Reached:** 1 item hit the limit.
+    *   **Errors:** 0 items encountered processing errors.
+*   **Key Finding:** Demonstrated self-correction capability (e.g., Item 6) and converged to the same final classifications as the ensemble method for this dataset.
+
+*(See the respective notebooks and `results/` directory for detailed analysis.)*
+
+## Comparison of Approaches
+
+| Feature               | Ensemble (Majority Vote)                     | Reflection Agent (Self-Correction)           |
+| :-------------------- | :------------------------------------------- | :------------------------------------------- |
+| **Core Idea**         | Wisdom of the crowd; diverse perspectives    | Iterative refinement; self-critique          |
+| **LLM Usage**         | Multiple (e.g., 3) models run sequentially   | 1 Generator + 1 Critic (sequential loop)   |
+| **Implementation**    | Modular Python scripts (`src/`), Notebook 00 | LangGraph state machine, Notebook 01         |
+| **Robustness**        | High (reduces impact of single model failure)| High (potential for self-correction)       |
+| **Latency (per item)**| Sum of sequential model runs                 | Sequential loop; depends on iterations       |
+| **Compute/Cost**      | Higher (multiple large models, GPU needed)   | API costs; depends on iterations             |
+| **Complexity**        | Simpler voting logic                         | More complex graph/state/prompt management   |
+| **Error Handling**    | Handles individual model failures via voting | Can correct initial errors; relies on critic |
+| **Outcome (This Task)**| 16 Accurate, 8 Inaccurate                   | 16 Accurate, 8 Inaccurate                   |
+
+**Conclusion (This Task):** For this specific dataset and task rules, both the multi-model ensemble (using quantized open-source models) and the reflection agent (using Claude API models) effectively identified the same 8 inaccurate labels and achieved the same final classification results. The reflection agent showcased its ability to self-correct based on critique, while the ensemble demonstrated robustness through voting. The choice in a production setting would depend on factors like available hardware (GPU vs. API), latency requirements, budget, and the desired level of explicit self-correction logic.
 
 ## Assumptions & Design Decisions
 
-*   **LLM Ensemble:** Used Qwen-14B, Gemma-12B, Mistral-Small for diversity and robustness.
-*   **Quantization:** Applied 4-bit quantization as necessary for hardware constraints (40GB A100).
-*   **Prompting:** Single detailed prompt per call, relying on LLM's instruction following and JSON capabilities.
-*   **Majority Voting:** Best 2-out-of-3 determines consensus. Guarantees a decision if models provide valid outputs.
-*   **Rule Interpretation:** Strictly followed rules provided in the exercise description (esp. regarding missing info).
-*   **Text Cleaning:** Basic HTML/whitespace cleaning.
-*   **Locale:** Filtered for 'us' locale based on target queries.
+*   **LLMs:** Specific models chosen for each approach based on capability and accessibility (open-source vs. API).
+*   **Quantization (Ensemble):** Applied 4-bit quantization for feasibility on available hardware.
+*   **Prompting:** Detailed prompts designed to elicit specific JSON output and enforce rules.
+*   **Voting/Reflection Logic:** Implemented majority voting (Ensemble) and a verify-reflect-revise loop (Reflection Agent).
+*   **Rule Interpretation:** Strictly followed rules provided in the PDF exercise description (esp. regarding missing info).
+*   **Text Cleaning:** Basic HTML/whitespace cleaning applied to product context.
 
 ## Potential Improvements & Future Work
 
-*   **Structured Extraction:** Extract key specifications (size, count, features) from text first, then compare structurally for more robust contradiction detection.
-*   **Fine-tuning:** Fine-tune a smaller, efficient model on verified examples for potentially better performance or cost-efficiency.
-*   **Advanced Prompting:** Explore Chain-of-Thought or ReAct patterns for more complex reasoning tasks.
-*   **Error Analysis:** Deeper dive into any parsing failures (though none occurred in the final vote) to improve prompt/parsing robustness for edge cases.
-*   **Cost Analysis:** Evaluate cost/benefit of using multiple models vs. a single top-tier model in a production/API setting.
+*   **Hybrid Approaches:** Combine ensemble generation with a reflection step on the consensus result.
+*   **Structured Extraction:** Pre-process text to extract key attributes (size, count, voltage, etc.) for more direct comparison, potentially reducing LLM ambiguity.
+*   **Fine-tuning:** Fine-tune smaller models (open-source or API-based) on verified data for efficiency.
+*   **Advanced Agentic Patterns:** I could Explore more complex planning agents if reasoning becomes more intricate.
+*   **Error Analysis & Recovery:** Implement more robust error handling within the LangGraph agent (e.g., retry mechanisms, specific error states) and LangSmith observability to our reflection agent. 
+*   **Scalability:** For larger datasets, we could batch API calls (Reflection) or parallel execution across GPUs (Ensemble).
 
 ## Disclaimer
 
-This project was completed as part of the Grainger interview process. The code and findings are based on the provided dataset and instructions PDF.
+This project was completed as part of the Grainger interview process. The code and findings are based on the provided dataset and instructions.

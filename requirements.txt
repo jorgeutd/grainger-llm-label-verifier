@@ -1,9 +1,11 @@
-# Core ML/Data Libraries
+# requirements.txt
+
+# --- Core ML/Data Libraries (Used by Both Approaches) ---
 pandas==2.2.3
 pyarrow==19.0.1
-numpy==1.26.4 # Usually needed with pandas
+numpy==1.26.4
 
-# Hugging Face Ecosystem
+# --- Hugging Face Ecosystem (for Ensemble Approach - Notebook 00) ---
 transformers==4.51.3
 accelerate==1.6.0
 bitsandbytes==0.45.5
@@ -11,11 +13,23 @@ torch==2.6.0+cu124 # Pinning CUDA version is important for reproducibility
 sentencepiece==0.2.0
 huggingface_hub # For model download/login
 
-# Utilities & Notebook
+# --- LangChain / LangGraph (for Reflection Agent Approach - Notebook 01) ---
+langgraph==0.3.33
+langchain==0.3.24
+langchain-core>=0.1.0,<0.2.0 # Often needed explicitly
+langchain-anthropic==0.3.12
+pydantic==2.11.3 # LangChain/Graph can be sensitive to Pydantic version
+
+# --- Utilities (Used by Both/General) ---
 tqdm # Progress bars
 requests # For downloading data
+python-dotenv==1.1.0 # For reading .env file (used in Reflection Agent setup)
+
+# --- Notebook / Visualization 
 ipython # For notebook execution
 jupyter # For notebook execution
-matplotlib # For plots in EDA notebook
-seaborn # For plots in EDA notebook
-
+matplotlib # For plots in EDA notebook (if added back)
+seaborn # For plots in EDA notebook (if added back)
+pygraphviz==1.14 # For LangGraph visualization in Reflection Agent notebook
+# Note: pygraphviz requires the system library 'graphviz' to be installed first!
+# On Debian/Ubuntu/Colab: sudo apt-get install graphviz libgraphviz-dev
