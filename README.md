@@ -167,7 +167,7 @@ Both approaches were run on the same 24 filtered query-product pairs.
 | **Error Handling**    | Handles individual model failures via voting | Can correct initial errors; relies on critic |
 | **Outcome (This Task)**| 16 Accurate, 8 Inaccurate                   | 16 Accurate, 8 Inaccurate                   |
 
-**Conclusion (This Task):** For this specific dataset and task rules, both the multi-model ensemble (using quantized open-source models) and the reflection agent (using Claude API models) effectively identified the same 8 inaccurate labels and achieved the same final classification results. The reflection agent showcased its ability to self-correct based on critique, while the ensemble demonstrated robustness through voting. The choice in a production setting would depend on factors like available hardware (GPU vs. API), latency requirements, budget, and the desired level of explicit self-correction logic.
+** Conclusion for Grainger llm Exercise:** For this specific dataset and task rules, both the multi-model ensemble (using quantized open-source models) and the reflection agent (using Claude API models) effectively identified the same 8 inaccurate labels and achieved the same final classification results. The reflection agent showcased its ability to self-correct based on critique, while the ensemble demonstrated robustness through voting. The choice in a production setting would depend on factors like available hardware (GPU vs. API), latency requirements, budget, and the desired level of explicit self-correction logic.
 
 ## Assumptions & Design Decisions
 
@@ -189,4 +189,4 @@ Both approaches were run on the same 24 filtered query-product pairs.
 
 ## Disclaimer
 
-This project was completed as part of the Grainger interview process. The code and findings are based on the provided dataset and instructions.
+This project was completed as part of the Grainger interview process. The code and findings are based on the provided dataset link and instructions PDF document.
