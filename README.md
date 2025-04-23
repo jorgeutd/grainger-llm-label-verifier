@@ -139,7 +139,7 @@ Both approaches were run on the same 24 filtered query-product pairs.
     *   ❓ **Tied / Undecided:** 0 (0.0%)
 *   **Key Finding:** Achieved 100% consensus across the 24 items.
 
-### Reflection Agent Approach (Claude 3.5 Sonnet + Claude 3 Haiku)
+### Reflection Agent Approach (Claude 3.5 Sonnet + Claude 3.7 Sonnet)
 
 *   **Final Label Distribution (After Reflection):**
     *   ✅ **Accurate:** 16 (66.7%)
