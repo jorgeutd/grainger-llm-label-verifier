@@ -84,7 +84,7 @@ grainger-llm-label-verifier/
 
 ## Usage
 
-This project provides two distinct implementations, run via their respective notebooks:
+This project provides two distinct implementations, primarily designed to be run via their respective Jupyter notebooks. While the code is structured into reusable `src` modules, a fully integrated command-line script (`main.py`) was not completed due to the time constraints of the exercise. The notebooks provide the complete end-to-end workflow for each approach.
 
 ### 1. Ensemble Approach (Notebook 00)
 
