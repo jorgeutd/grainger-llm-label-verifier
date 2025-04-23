@@ -103,7 +103,7 @@ This project provides two distinct implementations, primarily designed to be run
 **To Run:**
 1.  Complete the Setup steps.
 2.  Launch Jupyter Lab (`jupyter lab`).
-3.  Open the desired notebook (`00_...` or `01_...`).
+3.  Open the desired notebook (`notebooks/00_end_to_end_workflow_llm_verfication.ipynb.` or `notebooks/01_agentic_implementation_langgraph.ipynb`).
 4.  Ensure necessary prerequisites (GPU for Notebook 00, Anthropic API Key for Notebook 01) are met.
 5.  Run the notebook cells sequentially.
 
