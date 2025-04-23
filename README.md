@@ -24,6 +24,8 @@ Two primary approaches are implemented and documented in this repository:
 *   **Key Fields Used:** `query_id`, `product_id`, `query`, `esci_label`, `product_locale`, `product_title`, `product_description`, `product_bullet_point`, `product_brand`, `product_color`.
 
 ## Project Structure
+
+```
 grainger-llm-label-verifier/
 │
 ├── .gitignore
@@ -47,6 +49,7 @@ grainger-llm-label-verifier/
     ├── llm_interaction.py
     ├── utils.py
     └── __init__.py
+```
 
 
 
